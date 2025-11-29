@@ -19,19 +19,17 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: gradle
 
-    - name: Download Gradle Wrapper JAR
-      run: |
-        curl -L https://services.gradle.org/distributions/gradle-8.2-all.zip -o gradle.zip
-        unzip -q gradle.zip
-        cp gradle-8.2/lib/gradle-launcher-8.2.jar gradle/wrapper/gradle-wrapper.jar
-        rm -rf gradle-8.2 gradle.zip
-        
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: '8.2'
+        cache-read-only: false
+
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build Release APK
+    - name: Build Release APK with Gradle
       run: ./gradlew assembleRelease --no-daemon --stacktrace
 
     - name: Get version name

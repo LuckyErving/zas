@@ -49,9 +49,16 @@ git push origin v1.0.0
 
 1. 访问你的GitHub仓库
 2. 点击 "Actions" 标签页查看构建进度
-3. 构建完成后，在 "Releases" 页面可以下载APK文件
+3. 构建时间约5-10分钟（首次构建会下载依赖）
+4. 构建成功后，自动发布到 "Releases" 页面
+5. 下载APK文件
 
 文件名格式：`增爱刷-1.0.0.apk`
+
+**构建优化说明**：
+- 使用 `gradle/actions/setup-gradle@v3` 自动管理Gradle
+- 启用依赖缓存，后续构建更快
+- 无需手动配置gradle-wrapper.jar
 
 ## 📱 安装使用
 

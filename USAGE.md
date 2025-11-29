@@ -4,7 +4,7 @@
 
 由于gradle-wrapper.jar文件较大，需要在首次构建前手动下载或通过GitHub Actions自动下载。
 
-### 方法1：使用GitHub Actions自动构建
+### 方法1：使用GitHub Actions自动构建（推荐）
 
 1. 将项目推送到GitHub
 2. 创建一个tag触发构建：
@@ -12,24 +12,36 @@
    git tag -a v1.0.0 -m "First release"
    git push origin v1.0.0
    ```
-3. GitHub Actions会自动下载依赖并构建APK
+3. GitHub Actions会自动设置Gradle环境并构建APK
+   - 使用gradle/actions自动下载和缓存Gradle
+   - 无需手动下载gradle-wrapper.jar
+   - 构建过程完全自动化
 
-### 方法2：本地构建
+### 方法2：本地构建（可选）
 
-如果需要本地构建，请先下载gradle-wrapper.jar：
+本地构建需要安装Gradle。推荐使用Homebrew：
 
 ```bash
-# 在项目根目录执行
-curl -L https://services.gradle.org/distributions/gradle-8.2-bin.zip -o gradle.zip
-unzip gradle.zip
-cp gradle-8.2/lib/gradle-wrapper-8.2.jar gradle/wrapper/gradle-wrapper.jar
-rm -rf gradle-8.2 gradle.zip
+# macOS安装Gradle
+brew install gradle
+
+# 或者使用SDKMAN
+curl -s "https://get.sdkman.io" | bash
+sdk install gradle 8.2
 ```
 
-然后运行：
+安装后，初始化gradle wrapper：
+```bash
+cd /Users/ervingye/Documents/Future/Work/zas
+gradle wrapper --gradle-version 8.2 --distribution-type all
+```
+
+然后构建APK：
 ```bash
 ./gradlew assembleRelease
 ```
+
+**注意**：推荐直接使用GitHub Actions构建，无需本地环境配置。
 
 ## 应用图标
 

@@ -90,26 +90,36 @@
 
 ## 🔨 构建说明
 
-本项目使用GitHub Actions自动构建和发布。
+本项目使用GitHub Actions自动构建和发布，**推荐使用自动构建方式**。
 
-### 本地构建
-
-```bash
-# 克隆仓库
-git clone https://github.com/your-username/zas.git
-cd zas
-
-# 构建APK
-./gradlew assembleRelease
-```
-
-### 自动发布
+### 自动构建（推荐）
 
 推送tag即可触发自动构建和发布：
 
 ```bash
 git tag -a v1.0.0 -m "Release version 1.0.0"
 git push origin v1.0.0
+```
+
+GitHub Actions会：
+- 自动配置Gradle环境
+- 使用缓存加速构建
+- 自动构建Release APK
+- 发布到GitHub Releases
+
+### 本地构建（可选）
+
+需要先安装Gradle 8.2+：
+
+```bash
+# macOS
+brew install gradle
+
+# 初始化wrapper
+gradle wrapper --gradle-version 8.2
+
+# 构建APK
+./gradlew assembleRelease
 ```
 
 ## 📄 开源协议
