@@ -1,0 +1,82 @@
+name: Android CI
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Download Gradle Wrapper JAR
+      run: |
+        curl -L https://services.gradle.org/distributions/gradle-8.2-all.zip -o gradle.zip
+        unzip -q gradle.zip
+        cp gradle-8.2/lib/gradle-launcher-8.2.jar gradle/wrapper/gradle-wrapper.jar
+        rm -rf gradle-8.2 gradle.zip
+        
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - name: Build Release APK
+      run: ./gradlew assembleRelease --no-daemon --stacktrace
+
+    - name: Get version name
+      id: version
+      run: |
+        VERSION=$(grep "versionName" app/build.gradle.kts | awk '{print $3}' | tr -d '"')
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Version: $VERSION"
+
+    - name: Rename APK
+      run: |
+        VERSION=${{ steps.version.outputs.version }}
+        mv app/build/outputs/apk/release/app-release.apk "增爱刷-${VERSION}.apk"
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: 增爱刷 ${{ steps.version.outputs.version }}
+        draft: false
+        prerelease: false
+        body: |
+          ## 增爱刷 ${{ steps.version.outputs.version }}
+          
+          ### 功能特性
+          - 📚 支持从JSON文件批量导入习题
+          - 📝 支持单选题、多选题、判断题
+          - 🔀 顺序刷题和随机刷题两种模式
+          - ⭐ 收藏功能，标记重要题目
+          - ❌ 错题本自动记录，针对性复习
+          - 📊 学习进度和正确率统计
+          - 💾 支持导出和导入学习数据
+          
+          ### 下载说明
+          请下载下方的 `增爱刷-${{ steps.version.outputs.version }}.apk` 文件安装使用
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./增爱刷-${{ steps.version.outputs.version }}.apk
+        asset_name: 增爱刷-${{ steps.version.outputs.version }}.apk
+        asset_content_type: application/vnd.android.package-archive

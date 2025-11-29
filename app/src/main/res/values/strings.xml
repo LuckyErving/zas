@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">增爱刷</string>
+    <string name="tab_practice">刷题</string>
+    <string name="tab_mine">我的</string>
+    <string name="import_questions">导入习题</string>
+    <string name="question_banks">题库列表</string>
+    <string name="favorites">收藏夹</string>
+    <string name="wrong_questions">错题本</string>
+    <string name="sequential_mode">按顺序刷题</string>
+    <string name="random_mode">随机刷题</string>
+    <string name="submit_answer">提交答案</string>
+    <string name="next_question">下一题</string>
+    <string name="show_answer">查看答案</string>
+    <string name="explanation">解析</string>
+    <string name="correct">正确</string>
+    <string name="wrong">错误</string>
+    <string name="learning_progress">学习进度</string>
+    <string name="accuracy_rate">正确率</string>
+    <string name="export_data">导出数据</string>
+    <string name="import_data">导入数据</string>
+    <string name="total_questions">总题数</string>
+    <string name="completed_questions">已完成</string>
+    <string name="single_choice">单选题</string>
+    <string name="multiple_choice">多选题</string>
+    <string name="true_false">判断题</string>
+    <string name="select_json_file">选择JSON文件</string>
+    <string name="import_success">导入成功</string>
+    <string name="import_failed">导入失败</string>
+    <string name="no_questions">暂无题目</string>
+    <string name="favorite_added">已添加到收藏</string>
+    <string name="favorite_removed">已取消收藏</string>
+</resources>
