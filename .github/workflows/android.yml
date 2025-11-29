@@ -29,6 +29,37 @@ jobs:
       run: |
         gradle wrapper --gradle-version 8.2 --distribution-type all
 
+    - name: Generate App Icons
+      run: |
+        # Create simple placeholder icons for all densities
+        sudo apt-get update && sudo apt-get install -y imagemagick
+        
+        # Generate a simple colored icon
+        convert -size 192x192 xc:'#6750A4' -pointsize 80 -fill white -gravity center \
+          -annotate +0+0 '增爱刷' app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+        convert -size 192x192 xc:'#6750A4' -pointsize 80 -fill white -gravity center \
+          -annotate +0+0 '增爱刷' app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
+        
+        convert -size 144x144 xc:'#6750A4' -pointsize 60 -fill white -gravity center \
+          -annotate +0+0 '增爱刷' app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+        convert -size 144x144 xc:'#6750A4' -pointsize 60 -fill white -gravity center \
+          -annotate +0+0 '增爱刷' app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
+        
+        convert -size 96x96 xc:'#6750A4' -pointsize 40 -fill white -gravity center \
+          -annotate +0+0 '增爱刷' app/src/main/res/mipmap-xhdpi/ic_launcher.png
+        convert -size 96x96 xc:'#6750A4' -pointsize 40 -fill white -gravity center \
+          -annotate +0+0 '增爱刷' app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
+        
+        convert -size 72x72 xc:'#6750A4' -pointsize 30 -fill white -gravity center \
+          -annotate +0+0 '增爱刷' app/src/main/res/mipmap-hdpi/ic_launcher.png
+        convert -size 72x72 xc:'#6750A4' -pointsize 30 -fill white -gravity center \
+          -annotate +0+0 '增爱刷' app/src/main/res/mipmap-hdpi/ic_launcher_round.png
+        
+        convert -size 48x48 xc:'#6750A4' -pointsize 20 -fill white -gravity center \
+          -annotate +0+0 '增爱刷' app/src/main/res/mipmap-mdpi/ic_launcher.png
+        convert -size 48x48 xc:'#6750A4' -pointsize 20 -fill white -gravity center \
+          -annotate +0+0 '增爱刷' app/src/main/res/mipmap-mdpi/ic_launcher_round.png
+
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
