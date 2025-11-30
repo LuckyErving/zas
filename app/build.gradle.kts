@@ -12,8 +12,8 @@ android {
         applicationId = "com.zengaishua.app"
         minSdk = 24
         targetSdk = 34
-        versionCode = 6
-        versionName = "1.2.2"
+        versionCode = 9
+        versionName = "1.2.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
