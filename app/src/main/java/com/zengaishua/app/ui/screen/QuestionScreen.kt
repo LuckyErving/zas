@@ -149,6 +149,9 @@ fun QuestionScreen(
                     onAnswerSelected = { viewModel.toggleAnswer(it) },
                     onSubmit = { viewModel.submitAnswer() },
                     onNext = { viewModel.nextQuestion() },
+                    onPrevious = { viewModel.previousQuestion() },
+                    canGoPrevious = uiState.currentIndex > 0,
+                    canGoNext = uiState.currentIndex < uiState.questions.size - 1,
                     parseOptions = { viewModel.parseOptions(it) },
                     modifier = Modifier
                         .fillMaxSize()
@@ -168,6 +171,9 @@ fun QuestionContent(
     onAnswerSelected: (String) -> Unit,
     onSubmit: () -> Unit,
     onNext: () -> Unit,
+    onPrevious: () -> Unit,
+    canGoPrevious: Boolean,
+    canGoNext: Boolean,
     parseOptions: (String) -> List<com.zengaishua.app.data.model.QuestionOption>,
     modifier: Modifier = Modifier
 ) {
@@ -176,12 +182,13 @@ fun QuestionContent(
     
     Box(
         modifier = modifier
-            .pointerInput(showAnswer) { // 当showAnswer变化时重新绑定手势
+            .pointerInput(canGoPrevious, canGoNext) { // 依赖导航状态
                 detectHorizontalDragGestures(
                     onDragEnd = {
                         if (abs(dragOffset) > 100) { // 滑动阈值
-                            if (dragOffset < 0 && showAnswer) { // 向左滑动，显示下一题
-                                onNext()
+                            when {
+                                dragOffset < 0 && canGoNext -> onNext() // 向左滑动，下一题
+                                dragOffset > 0 && canGoPrevious -> onPrevious() // 向右滑动，上一题
                             }
                         }
                         dragOffset = 0f

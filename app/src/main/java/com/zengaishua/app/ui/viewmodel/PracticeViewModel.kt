@@ -80,11 +80,17 @@ class PracticeViewModel(application: Application) : AndroidViewModel(application
             }
             // 恢复上次刷题位置
             val startIndex = bank?.lastPosition?.coerceIn(0, orderedQuestions.size - 1) ?: 0
+            val startQuestion = orderedQuestions.getOrNull(startIndex)
             _uiState.update {
                 it.copy(
                     questions = orderedQuestions,
-                    currentQuestion = orderedQuestions.getOrNull(startIndex),
-                    currentIndex = startIndex
+                    currentQuestion = startQuestion,
+                    currentIndex = startIndex,
+                    selectedAnswers = if (startQuestion?.isCompleted == true) 
+                        startQuestion.userAnswer.split(",").filter { it.isNotBlank() }.toSet() 
+                    else emptySet(),
+                    showAnswer = startQuestion?.isCompleted == true,
+                    isCorrect = startQuestion?.isCorrect
                 )
             }
         }
@@ -94,11 +100,17 @@ class PracticeViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             // 使用first()而不是collect()，只获取一次数据
             val questions = repository.getFavoriteQuestions(bankId).first()
+            val firstQuestion = questions.firstOrNull()
             _uiState.update {
                 it.copy(
                     questions = questions,
-                    currentQuestion = questions.firstOrNull(),
-                    currentIndex = 0
+                    currentQuestion = firstQuestion,
+                    currentIndex = 0,
+                    selectedAnswers = if (firstQuestion?.isCompleted == true) 
+                        firstQuestion.userAnswer.split(",").filter { it.isNotBlank() }.toSet() 
+                    else emptySet(),
+                    showAnswer = firstQuestion?.isCompleted == true,
+                    isCorrect = firstQuestion?.isCorrect
                 )
             }
         }
@@ -108,11 +120,17 @@ class PracticeViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             // 使用first()而不是collect()，只获取一次数据
             val questions = repository.getWrongQuestions(bankId).first()
+            val firstQuestion = questions.firstOrNull()
             _uiState.update {
                 it.copy(
                     questions = questions,
-                    currentQuestion = questions.firstOrNull(),
-                    currentIndex = 0
+                    currentQuestion = firstQuestion,
+                    currentIndex = 0,
+                    selectedAnswers = if (firstQuestion?.isCompleted == true) 
+                        firstQuestion.userAnswer.split(",").filter { it.isNotBlank() }.toSet() 
+                    else emptySet(),
+                    showAnswer = firstQuestion?.isCompleted == true,
+                    isCorrect = firstQuestion?.isCorrect
                 )
             }
         }
@@ -172,13 +190,38 @@ class PracticeViewModel(application: Application) : AndroidViewModel(application
         val nextIndex = currentIndex + 1
 
         if (nextIndex < questions.size) {
+            val nextQuestion = questions[nextIndex]
             _uiState.update {
                 it.copy(
                     currentIndex = nextIndex,
-                    currentQuestion = questions[nextIndex],
-                    selectedAnswers = emptySet(),
-                    showAnswer = false,
-                    isCorrect = null
+                    currentQuestion = nextQuestion,
+                    selectedAnswers = if (nextQuestion.isCompleted) 
+                        nextQuestion.userAnswer.split(",").filter { it.isNotBlank() }.toSet() 
+                    else emptySet(),
+                    showAnswer = nextQuestion.isCompleted,
+                    isCorrect = nextQuestion.isCorrect
+                )
+            }
+            saveCurrentPosition()
+        }
+    }
+    
+    fun previousQuestion() {
+        val questions = _uiState.value.questions
+        val currentIndex = _uiState.value.currentIndex
+        val prevIndex = currentIndex - 1
+
+        if (prevIndex >= 0) {
+            val prevQuestion = questions[prevIndex]
+            _uiState.update {
+                it.copy(
+                    currentIndex = prevIndex,
+                    currentQuestion = prevQuestion,
+                    selectedAnswers = if (prevQuestion.isCompleted) 
+                        prevQuestion.userAnswer.split(",").filter { it.isNotBlank() }.toSet() 
+                    else emptySet(),
+                    showAnswer = prevQuestion.isCompleted,
+                    isCorrect = prevQuestion.isCorrect
                 )
             }
             saveCurrentPosition()
@@ -188,13 +231,16 @@ class PracticeViewModel(application: Application) : AndroidViewModel(application
     fun goToQuestion(index: Int) {
         val questions = _uiState.value.questions
         if (index in questions.indices) {
+            val targetQuestion = questions[index]
             _uiState.update {
                 it.copy(
                     currentIndex = index,
-                    currentQuestion = questions[index],
-                    selectedAnswers = emptySet(),
-                    showAnswer = false,
-                    isCorrect = null
+                    currentQuestion = targetQuestion,
+                    selectedAnswers = if (targetQuestion.isCompleted) 
+                        targetQuestion.userAnswer.split(",").filter { it.isNotBlank() }.toSet() 
+                    else emptySet(),
+                    showAnswer = targetQuestion.isCompleted,
+                    isCorrect = targetQuestion.isCorrect
                 )
             }
             saveCurrentPosition()
