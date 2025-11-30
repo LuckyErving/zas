@@ -50,8 +50,9 @@ class QuestionRepository(
                     return@withContext Result.failure(Exception("JSON格式错误"))
                 }
 
-                // 创建题库
-                val bankId = jsonData.obj.id
+                // 生成唯一的题库ID：使用时间戳确保不会冲突
+                val uniqueBankId = "bank_${System.currentTimeMillis()}"
+                
                 val questions = jsonData.obj.list.map { jsonQuestion ->
                     // 解析选项
                     val options = jsonQuestion.options.map { option ->
@@ -61,9 +62,10 @@ class QuestionRepository(
                         )
                     }
 
+                    // 为每个题目生成唯一ID：题库ID + 原题目ID
                     Question(
-                        id = jsonQuestion.id,
-                        bankId = bankId,
+                        id = "${uniqueBankId}_${jsonQuestion.id}",
+                        bankId = uniqueBankId,
                         stem = jsonQuestion.stemlist.firstOrNull()?.text ?: "",
                         type = jsonQuestion.type,
                         answer = jsonQuestion.answer,
@@ -74,7 +76,7 @@ class QuestionRepository(
 
                 // 保存到数据库
                 val bank = QuestionBank(
-                    id = bankId,
+                    id = uniqueBankId,
                     name = bankName,
                     totalCount = questions.size
                 )
@@ -106,8 +108,9 @@ class QuestionRepository(
                     return@withContext Result.failure(Exception("JSON格式错误"))
                 }
 
-                // 创建题库
-                val bankId = jsonData.obj.id
+                // 使用固定ID作为默认题库，确保首次安装的默认题库ID统一
+                val defaultBankId = "bank_default_${jsonData.obj.id}"
+                
                 val questions = jsonData.obj.list.map { jsonQuestion ->
                     // 解析选项
                     val options = jsonQuestion.options.map { option ->
@@ -118,8 +121,8 @@ class QuestionRepository(
                     }
 
                     Question(
-                        id = jsonQuestion.id,
-                        bankId = bankId,
+                        id = "${defaultBankId}_${jsonQuestion.id}",
+                        bankId = defaultBankId,
                         stem = jsonQuestion.stemlist.firstOrNull()?.text ?: "",
                         type = jsonQuestion.type,
                         answer = jsonQuestion.answer,
@@ -130,7 +133,7 @@ class QuestionRepository(
 
                 // 保存到数据库
                 val bank = QuestionBank(
-                    id = bankId,
+                    id = defaultBankId,
                     name = "默认题库",
                     totalCount = questions.size
                 )

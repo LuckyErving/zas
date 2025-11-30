@@ -42,7 +42,7 @@ fun MineScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 学习统计
+            // 总体学习统计
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth()
@@ -51,7 +51,7 @@ fun MineScreen(
                         modifier = Modifier.padding(16.dp)
                     ) {
                         Text(
-                            text = "学习统计",
+                            text = "总体学习统计",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
@@ -72,6 +72,22 @@ fun MineScreen(
                         Divider(modifier = Modifier.padding(vertical = 8.dp))
                         StatItem("正确率", "$accuracy%")
                     }
+                }
+            }
+
+            // 各题库学习统计
+            if (uiState.banks.isNotEmpty()) {
+                item {
+                    Text(
+                        text = "各题库详情",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+
+                items(uiState.banks) { bank ->
+                    BankStatisticsCard(bank = bank)
                 }
             }
 
@@ -167,6 +183,99 @@ fun StatItem(label: String, value: String) {
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
         )
+    }
+}
+
+@Composable
+fun BankStatisticsCard(bank: QuestionBank) {
+    Card(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = bank.name,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            val accuracy = if (bank.completedCount > 0) {
+                (bank.correctCount * 100.0 / bank.completedCount).toInt()
+            } else 0
+            
+            val progress = if (bank.totalCount > 0) {
+                (bank.completedCount * 100.0 / bank.totalCount).toInt()
+            } else 0
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "总题数",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "${bank.totalCount}",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "已完成",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "${bank.completedCount}",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.End
+                ) {
+                    Text(
+                        text = "正确率",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "$accuracy%",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.tertiary
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // 进度条
+            Column {
+                Text(
+                    text = "完成进度: $progress%",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                LinearProgressIndicator(
+                    progress = progress / 100f,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
     }
 }
 
