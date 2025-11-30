@@ -172,10 +172,11 @@ fun QuestionContent(
     modifier: Modifier = Modifier
 ) {
     var dragOffset by remember { mutableStateOf(0f) }
+    val scrollState = rememberScrollState()
     
-    Column(
+    Box(
         modifier = modifier
-            .pointerInput(Unit) {
+            .pointerInput(showAnswer) { // 当showAnswer变化时重新绑定手势
                 detectHorizontalDragGestures(
                     onDragEnd = {
                         if (abs(dragOffset) > 100) { // 滑动阈值
@@ -185,14 +186,20 @@ fun QuestionContent(
                         }
                         dragOffset = 0f
                     },
-                    onHorizontalDrag = { _, dragAmount ->
-                        dragOffset += dragAmount
+                    onHorizontalDrag = { change, dragAmount ->
+                        // 只有在不是垂直滚动时才处理水平滑动
+                        if (abs(dragAmount) > abs(change.position.y - change.previousPosition.y)) {
+                            dragOffset += dragAmount
+                        }
                     }
                 )
             }
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp)
     ) {
+        Column(
+            modifier = Modifier
+                .verticalScroll(scrollState)
+                .padding(16.dp)
+        ) {
         // 题目类型标签
         val typeText = when (question.type) {
             1 -> "单选题"
@@ -308,6 +315,7 @@ fun QuestionContent(
                 Text("下一题")
             }
         }
+        }
     }
 }
 
@@ -322,10 +330,11 @@ fun MemorizeContent(
     modifier: Modifier = Modifier
 ) {
     var dragOffset by remember { mutableStateOf(0f) }
+    val scrollState = rememberScrollState()
     
-    Column(
+    Box(
         modifier = modifier
-            .pointerInput(Unit) {
+            .pointerInput(canGoPrevious, canGoNext) { // 依赖导航状态
                 detectHorizontalDragGestures(
                     onDragEnd = {
                         if (abs(dragOffset) > 100) { // 滑动阈值
@@ -336,14 +345,20 @@ fun MemorizeContent(
                         }
                         dragOffset = 0f
                     },
-                    onHorizontalDrag = { _, dragAmount ->
-                        dragOffset += dragAmount
+                    onHorizontalDrag = { change, dragAmount ->
+                        // 只有在不是垂直滚动时才处理水平滑动
+                        if (abs(dragAmount) > abs(change.position.y - change.previousPosition.y)) {
+                            dragOffset += dragAmount
+                        }
                     }
                 )
             }
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp)
     ) {
+        Column(
+            modifier = Modifier
+                .verticalScroll(scrollState)
+                .padding(16.dp)
+        ) {
         // 题目类型标签
         val typeText = when (question.type) {
             1 -> "单选题"
@@ -455,6 +470,7 @@ fun MemorizeContent(
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(Icons.Default.ArrowForward, contentDescription = null)
             }
+        }
         }
     }
 }

@@ -217,8 +217,24 @@ class PracticeViewModel(application: Application) : AndroidViewModel(application
 
     fun toggleFavorite() {
         val question = _uiState.value.currentQuestion ?: return
+        val questions = _uiState.value.questions.toMutableList()
+        val currentIndex = _uiState.value.currentIndex
+        
+        // 更新当前题目的收藏状态
+        val updatedQuestion = question.copy(isFavorite = !question.isFavorite)
+        questions[currentIndex] = updatedQuestion
+        
+        // 立即更新UI状态
+        _uiState.update {
+            it.copy(
+                currentQuestion = updatedQuestion,
+                questions = questions
+            )
+        }
+        
+        // 异步更新数据库
         viewModelScope.launch {
-            repository.updateQuestion(question.copy(isFavorite = !question.isFavorite))
+            repository.updateQuestion(updatedQuestion)
         }
     }
 
