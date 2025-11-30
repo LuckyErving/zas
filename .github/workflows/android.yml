@@ -86,7 +86,8 @@ jobs:
     - name: Rename APK
       run: |
         VERSION=${{ steps.version.outputs.version }}
-        mv app/build/outputs/apk/release/app-release.apk "增爱刷-${VERSION}.apk"
+        cp app/build/outputs/apk/release/app-release.apk "增爱刷-${VERSION}.apk"
+        ls -lh "增爱刷-${VERSION}.apk"
 
     - name: Create Release
       id: create_release
@@ -111,7 +112,7 @@ jobs:
           - 💾 支持导出和导入学习数据
           
           ### 下载说明
-          请下载下方的 `zas-${{ steps.version.outputs.version }}.apk` 文件安装使用
+          请下载下方的 `增爱刷-${{ steps.version.outputs.version }}.apk` 文件安装使用
 
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
@@ -119,6 +120,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./zas-${{ steps.version.outputs.version }}.apk
-        asset_name: zas-${{ steps.version.outputs.version }}.apk
+        asset_path: ./增爱刷-${{ steps.version.outputs.version }}.apk
+        asset_name: 增爱刷-${{ steps.version.outputs.version }}.apk
         asset_content_type: application/vnd.android.package-archive
