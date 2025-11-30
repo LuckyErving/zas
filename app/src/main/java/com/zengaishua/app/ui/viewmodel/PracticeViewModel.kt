@@ -300,23 +300,6 @@ class PracticeViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    fun previousQuestion() {
-        val currentIndex = _uiState.value.currentIndex
-        if (currentIndex > 0) {
-            val questions = _uiState.value.questions
-            _uiState.update {
-                it.copy(
-                    currentIndex = currentIndex - 1,
-                    currentQuestion = questions[currentIndex - 1],
-                    selectedAnswers = emptySet(),
-                    showAnswer = false,
-                    isCorrect = null
-                )
-            }
-            saveCurrentPosition()
-        }
-    }
-
     fun parseOptions(optionsJson: String): List<QuestionOption> {
         return try {
             gson.fromJson(optionsJson, Array<QuestionOption>::class.java).toList()
