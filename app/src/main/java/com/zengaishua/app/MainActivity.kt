@@ -21,6 +21,7 @@ import androidx.navigation.compose.rememberNavController
 import com.zengaishua.app.ui.screen.MineScreen
 import com.zengaishua.app.ui.screen.PracticeScreen
 import com.zengaishua.app.ui.screen.QuestionScreen
+import com.zengaishua.app.ui.screen.QuestionListScreen
 import com.zengaishua.app.ui.theme.ZasTheme
 import com.zengaishua.app.ui.viewmodel.MineViewModel
 import com.zengaishua.app.ui.viewmodel.PracticeViewModel
@@ -31,6 +32,7 @@ sealed class Screen(val route: String, val title: String) {
     object Question : Screen("question/{bankId}/{mode}", "答题") {
         fun createRoute(bankId: String, mode: String) = "question/$bankId/$mode"
     }
+    object QuestionList : Screen("question_list", "题目列表")
 }
 
 class MainActivity : ComponentActivity() {
@@ -141,7 +143,21 @@ fun MainScreen(
             composable(Screen.Question.route) {
                 QuestionScreen(
                     viewModel = practiceViewModel,
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onShowQuestionList = {
+                        navController.navigate(Screen.QuestionList.route)
+                    }
+                )
+            }
+
+            composable(Screen.QuestionList.route) {
+                QuestionListScreen(
+                    viewModel = practiceViewModel,
+                    onBack = { navController.popBackStack() },
+                    onQuestionClick = { index ->
+                        practiceViewModel.goToQuestion(index)
+                        navController.popBackStack()
+                    }
                 )
             }
         }

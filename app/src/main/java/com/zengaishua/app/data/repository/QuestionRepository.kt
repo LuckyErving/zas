@@ -153,4 +153,15 @@ class QuestionRepository(
         learningRecordDao.deleteRecordsByBank(bank.id)
         questionBankDao.deleteBank(bank)
     }
+
+    // 获取题库信息
+    suspend fun getBankById(bankId: String): QuestionBank? = withContext(Dispatchers.IO) {
+        questionBankDao.getBankById(bankId)
+    }
+
+    // 更新题库刷题位置
+    suspend fun updateBankPosition(bankId: String, position: Int) = withContext(Dispatchers.IO) {
+        val bank = questionBankDao.getBankById(bankId) ?: return@withContext
+        questionBankDao.updateBank(bank.copy(lastPosition = position))
+    }
 }

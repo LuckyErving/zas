@@ -51,6 +51,7 @@ data class QuestionBank(
     val totalCount: Int,                     // 总题数
     val completedCount: Int = 0,             // 已完成题数
     val correctCount: Int = 0,               // 答对题数
+    val lastPosition: Int = 0,               // 最后刷题位置
     val importTime: Long = System.currentTimeMillis() // 导入时间
 )
 

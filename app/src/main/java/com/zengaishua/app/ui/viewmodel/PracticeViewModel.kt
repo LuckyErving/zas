@@ -23,12 +23,18 @@ data class PracticeUiState(
     val isCorrect: Boolean? = null,
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val practiceMode: PracticeMode = PracticeMode.SEQUENTIAL
+    val practiceMode: PracticeMode = PracticeMode.SEQUENTIAL,
+    val studyMode: StudyMode = StudyMode.PRACTICE
 )
 
 enum class PracticeMode {
     SEQUENTIAL,  // 顺序
     RANDOM       // 随机
+}
+
+enum class StudyMode {
+    PRACTICE,    // 练习模式
+    MEMORIZE     // 背题模式
 }
 
 class PracticeViewModel(application: Application) : AndroidViewModel(application) {
@@ -57,17 +63,20 @@ class PracticeViewModel(application: Application) : AndroidViewModel(application
 
     private fun loadQuestions(bankId: String) {
         viewModelScope.launch {
+            val bank = repository.getBankById(bankId)
             repository.getQuestionsByBank(bankId).collect { questions ->
                 val orderedQuestions = if (_uiState.value.practiceMode == PracticeMode.RANDOM) {
                     questions.shuffled()
                 } else {
                     questions
                 }
+                // 恢复上次刷题位置
+                val startIndex = bank?.lastPosition?.coerceIn(0, orderedQuestions.size - 1) ?: 0
                 _uiState.update {
                     it.copy(
                         questions = orderedQuestions,
-                        currentQuestion = orderedQuestions.firstOrNull(),
-                        currentIndex = 0
+                        currentQuestion = orderedQuestions.getOrNull(startIndex),
+                        currentIndex = startIndex
                     )
                 }
             }
@@ -153,18 +162,49 @@ class PracticeViewModel(application: Application) : AndroidViewModel(application
     fun nextQuestion() {
         val questions = _uiState.value.questions
         val currentIndex = _uiState.value.currentIndex
+        val nextIndex = currentIndex + 1
 
-        if (currentIndex < questions.size - 1) {
+        if (nextIndex < questions.size) {
             _uiState.update {
                 it.copy(
-                    currentIndex = currentIndex + 1,
-                    currentQuestion = questions[currentIndex + 1],
+                    currentIndex = nextIndex,
+                    currentQuestion = questions[nextIndex],
                     selectedAnswers = emptySet(),
                     showAnswer = false,
                     isCorrect = null
                 )
             }
         }
+    }
+    
+    fun goToQuestion(index: Int) {
+        val questions = _uiState.value.questions
+        if (index in questions.indices) {
+            _uiState.update {
+                it.copy(
+                    currentIndex = index,
+                    currentQuestion = questions[index],
+                    selectedAnswers = emptySet(),
+                    showAnswer = false,
+                    isCorrect = null
+                )
+            }
+            saveCurrentPosition()
+        }
+    }
+
+    private fun saveCurrentPosition() {
+        val bank = _uiState.value.currentBank ?: return
+        val currentIndex = _uiState.value.currentIndex
+        viewModelScope.launch {
+            repository.updateBankPosition(bank.id, currentIndex)
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        // 保存当前位置
+        saveCurrentPosition()
     }
 
     fun toggleFavorite() {
@@ -177,6 +217,33 @@ class PracticeViewModel(application: Application) : AndroidViewModel(application
     fun setPracticeMode(mode: PracticeMode) {
         _uiState.update { it.copy(practiceMode = mode) }
         _uiState.value.currentBank?.let { loadQuestions(it.id) }
+    }
+
+    fun setStudyMode(mode: StudyMode) {
+        _uiState.update {
+            it.copy(
+                studyMode = mode,
+                selectedAnswers = emptySet(),
+                showAnswer = false,
+                isCorrect = null
+            )
+        }
+    }
+
+    fun previousQuestion() {
+        val currentIndex = _uiState.value.currentIndex
+        if (currentIndex > 0) {
+            val questions = _uiState.value.questions
+            _uiState.update {
+                it.copy(
+                    currentIndex = currentIndex - 1,
+                    currentQuestion = questions[currentIndex - 1],
+                    selectedAnswers = emptySet(),
+                    showAnswer = false,
+                    isCorrect = null
+                )
+            }
+        }
     }
 
     fun parseOptions(optionsJson: String): List<QuestionOption> {
