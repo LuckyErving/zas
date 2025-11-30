@@ -1,6 +1,7 @@
 package com.zengaishua.app.ui.screen
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
@@ -12,12 +13,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.zengaishua.app.data.model.Question
 import com.zengaishua.app.ui.viewmodel.PracticeMode
 import com.zengaishua.app.ui.viewmodel.PracticeViewModel
 import com.zengaishua.app.ui.viewmodel.StudyMode
+import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -168,8 +171,25 @@ fun QuestionContent(
     parseOptions: (String) -> List<com.zengaishua.app.data.model.QuestionOption>,
     modifier: Modifier = Modifier
 ) {
+    var dragOffset by remember { mutableStateOf(0f) }
+    
     Column(
         modifier = modifier
+            .pointerInput(Unit) {
+                detectHorizontalDragGestures(
+                    onDragEnd = {
+                        if (abs(dragOffset) > 100) { // 滑动阈值
+                            if (dragOffset < 0 && showAnswer) { // 向左滑动，显示下一题
+                                onNext()
+                            }
+                        }
+                        dragOffset = 0f
+                    },
+                    onHorizontalDrag = { _, dragAmount ->
+                        dragOffset += dragAmount
+                    }
+                )
+            }
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
@@ -301,8 +321,26 @@ fun MemorizeContent(
     canGoNext: Boolean,
     modifier: Modifier = Modifier
 ) {
+    var dragOffset by remember { mutableStateOf(0f) }
+    
     Column(
         modifier = modifier
+            .pointerInput(Unit) {
+                detectHorizontalDragGestures(
+                    onDragEnd = {
+                        if (abs(dragOffset) > 100) { // 滑动阈值
+                            when {
+                                dragOffset < 0 && canGoNext -> onNext() // 向左滑动，下一题
+                                dragOffset > 0 && canGoPrevious -> onPrevious() // 向右滑动，上一题
+                            }
+                        }
+                        dragOffset = 0f
+                    },
+                    onHorizontalDrag = { _, dragAmount ->
+                        dragOffset += dragAmount
+                    }
+                )
+            }
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {

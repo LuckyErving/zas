@@ -37,7 +37,8 @@ data class Question(
     var isWrong: Boolean = false,            // 是否在错题本
     var isCompleted: Boolean = false,        // 是否已完成
     var userAnswer: String = "",             // 用户答案
-    var isCorrect: Boolean? = null           // 是否答对
+    var isCorrect: Boolean? = null,          // 是否答对
+    var correctStreak: Int = 0               // 连续答对次数（错题需连续3次才剔除）
 )
 
 /**

@@ -9,6 +9,9 @@ interface QuestionBankDao {
     @Query("SELECT * FROM question_banks ORDER BY importTime DESC")
     fun getAllBanks(): Flow<List<QuestionBank>>
 
+    @Query("SELECT * FROM question_banks ORDER BY importTime DESC")
+    suspend fun getAllBanksOnce(): List<QuestionBank>
+
     @Query("SELECT * FROM question_banks WHERE id = :bankId")
     suspend fun getBankById(bankId: String): QuestionBank?
 

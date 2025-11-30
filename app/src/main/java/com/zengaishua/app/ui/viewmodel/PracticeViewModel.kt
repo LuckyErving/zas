@@ -46,6 +46,7 @@ class PracticeViewModel(application: Application) : AndroidViewModel(application
 
     init {
         loadBanks()
+        importDefaultBankIfNeeded()
     }
 
     private fun loadBanks() {
@@ -53,6 +54,12 @@ class PracticeViewModel(application: Application) : AndroidViewModel(application
             repository.getAllBanks().collect { banks ->
                 _uiState.update { it.copy(banks = banks) }
             }
+        }
+    }
+
+    private fun importDefaultBankIfNeeded() {
+        viewModelScope.launch {
+            repository.importDefaultQuestionBank()
         }
     }
 

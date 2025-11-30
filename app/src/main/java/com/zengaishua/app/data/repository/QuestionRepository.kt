@@ -87,6 +87,62 @@ class QuestionRepository(
             }
         }
 
+    // 从assets导入默认题库
+    suspend fun importDefaultQuestionBank(): Result<String> =
+        withContext(Dispatchers.IO) {
+            try {
+                // 检查是否已有题库
+                val existingBanks = questionBankDao.getAllBanksOnce()
+                if (existingBanks.isNotEmpty()) {
+                    return@withContext Result.success("已有题库，跳过导入")
+                }
+
+                val inputStream = context.assets.open("AI_level3.json")
+                val reader = InputStreamReader(inputStream, "UTF-8")
+                val jsonData = gson.fromJson(reader, JsonQuestionData::class.java)
+                reader.close()
+
+                if (jsonData.status != 200) {
+                    return@withContext Result.failure(Exception("JSON格式错误"))
+                }
+
+                // 创建题库
+                val bankId = jsonData.obj.id
+                val questions = jsonData.obj.list.map { jsonQuestion ->
+                    // 解析选项
+                    val options = jsonQuestion.options.map { option ->
+                        QuestionOption(
+                            tag = option.tag,
+                            value = option.value
+                        )
+                    }
+
+                    Question(
+                        id = jsonQuestion.id,
+                        bankId = bankId,
+                        stem = jsonQuestion.stemlist.firstOrNull()?.text ?: "",
+                        type = jsonQuestion.type,
+                        answer = jsonQuestion.answer,
+                        optionsJson = gson.toJson(options),
+                        explanation = jsonQuestion.jx ?: ""
+                    )
+                }
+
+                // 保存到数据库
+                val bank = QuestionBank(
+                    id = bankId,
+                    name = "默认题库",
+                    totalCount = questions.size
+                )
+                questionBankDao.insertBank(bank)
+                questionDao.insertQuestions(questions)
+
+                Result.success("成功导入默认题库：${questions.size} 道题目")
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
+
     // 更新题目 (收藏、答题等)
     suspend fun updateQuestion(question: Question) = withContext(Dispatchers.IO) {
         questionDao.updateQuestion(question)
@@ -102,12 +158,23 @@ class QuestionRepository(
         val userAnswerSet = userAnswer.split(",").toSet()
         val isCorrect = correctAnswerSet == userAnswerSet
 
+        // 更新连续正确次数和错题状态
+        val newCorrectStreak = if (isCorrect) {
+            question.correctStreak + 1
+        } else {
+            0 // 答错则重置连续正确次数
+        }
+
+        // 如果题目在错题本中，需要连续答对3次才能移除
+        val shouldRemoveFromWrong = question.isWrong && newCorrectStreak >= 3
+
         // 更新题目状态
         val updatedQuestion = question.copy(
             isCompleted = true,
             userAnswer = userAnswer,
             isCorrect = isCorrect,
-            isWrong = !isCorrect
+            isWrong = if (shouldRemoveFromWrong) false else (question.isWrong || !isCorrect),
+            correctStreak = newCorrectStreak
         )
         questionDao.updateQuestion(updatedQuestion)
 
