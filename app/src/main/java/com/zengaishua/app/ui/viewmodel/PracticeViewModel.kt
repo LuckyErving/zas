@@ -64,49 +64,49 @@ class PracticeViewModel(application: Application) : AndroidViewModel(application
     private fun loadQuestions(bankId: String) {
         viewModelScope.launch {
             val bank = repository.getBankById(bankId)
-            repository.getQuestionsByBank(bankId).collect { questions ->
-                val orderedQuestions = if (_uiState.value.practiceMode == PracticeMode.RANDOM) {
-                    questions.shuffled()
-                } else {
-                    questions
-                }
-                // 恢复上次刷题位置
-                val startIndex = bank?.lastPosition?.coerceIn(0, orderedQuestions.size - 1) ?: 0
-                _uiState.update {
-                    it.copy(
-                        questions = orderedQuestions,
-                        currentQuestion = orderedQuestions.getOrNull(startIndex),
-                        currentIndex = startIndex
-                    )
-                }
+            // 使用first()而不是collect()，只获取一次数据
+            val questions = repository.getQuestionsByBank(bankId).first()
+            val orderedQuestions = if (_uiState.value.practiceMode == PracticeMode.RANDOM) {
+                questions.shuffled()
+            } else {
+                questions
+            }
+            // 恢复上次刷题位置
+            val startIndex = bank?.lastPosition?.coerceIn(0, orderedQuestions.size - 1) ?: 0
+            _uiState.update {
+                it.copy(
+                    questions = orderedQuestions,
+                    currentQuestion = orderedQuestions.getOrNull(startIndex),
+                    currentIndex = startIndex
+                )
             }
         }
     }
 
     fun loadFavorites(bankId: String) {
         viewModelScope.launch {
-            repository.getFavoriteQuestions(bankId).collect { questions ->
-                _uiState.update {
-                    it.copy(
-                        questions = questions,
-                        currentQuestion = questions.firstOrNull(),
-                        currentIndex = 0
-                    )
-                }
+            // 使用first()而不是collect()，只获取一次数据
+            val questions = repository.getFavoriteQuestions(bankId).first()
+            _uiState.update {
+                it.copy(
+                    questions = questions,
+                    currentQuestion = questions.firstOrNull(),
+                    currentIndex = 0
+                )
             }
         }
     }
 
     fun loadWrongQuestions(bankId: String) {
         viewModelScope.launch {
-            repository.getWrongQuestions(bankId).collect { questions ->
-                _uiState.update {
-                    it.copy(
-                        questions = questions,
-                        currentQuestion = questions.firstOrNull(),
-                        currentIndex = 0
-                    )
-                }
+            // 使用first()而不是collect()，只获取一次数据
+            val questions = repository.getWrongQuestions(bankId).first()
+            _uiState.update {
+                it.copy(
+                    questions = questions,
+                    currentQuestion = questions.firstOrNull(),
+                    currentIndex = 0
+                )
             }
         }
     }
@@ -174,6 +174,7 @@ class PracticeViewModel(application: Application) : AndroidViewModel(application
                     isCorrect = null
                 )
             }
+            saveCurrentPosition()
         }
     }
     
@@ -243,6 +244,7 @@ class PracticeViewModel(application: Application) : AndroidViewModel(application
                     isCorrect = null
                 )
             }
+            saveCurrentPosition()
         }
     }
 
