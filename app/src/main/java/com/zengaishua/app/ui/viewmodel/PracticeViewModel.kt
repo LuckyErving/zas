@@ -172,11 +172,36 @@ class PracticeViewModel(application: Application) : AndroidViewModel(application
     fun submitAnswer() {
         val question = _uiState.value.currentQuestion ?: return
         val userAnswer = _uiState.value.selectedAnswers.sorted().joinToString(",")
+        val currentIndex = _uiState.value.currentIndex
 
         viewModelScope.launch {
             val isCorrect = repository.submitAnswer(question, userAnswer)
+            
+            // 计算新的连续正确次数
+            val newCorrectStreak = if (isCorrect) {
+                question.correctStreak + 1
+            } else {
+                0
+            }
+            
+            // 如果题目在错题本中，需要连续答对3次才能移除
+            val shouldRemoveFromWrong = question.isWrong && newCorrectStreak >= 3
+            
+            // 更新内存中的题目列表
+            val questions = _uiState.value.questions.toMutableList()
+            val updatedQuestion = question.copy(
+                isCompleted = true,
+                userAnswer = userAnswer,
+                isCorrect = isCorrect,
+                isWrong = if (shouldRemoveFromWrong) false else (question.isWrong || !isCorrect),
+                correctStreak = newCorrectStreak
+            )
+            questions[currentIndex] = updatedQuestion
+            
             _uiState.update {
                 it.copy(
+                    currentQuestion = updatedQuestion,
+                    questions = questions,
                     showAnswer = true,
                     isCorrect = isCorrect
                 )
